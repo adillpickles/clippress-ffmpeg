@@ -1,0 +1,31 @@
+# Added after the image's own configure flags (the last flag wins). Everything native in FFmpeg stays: all its
+# decoders, encoders, muxers, demuxers, filters and protocols. Only libraries ClipPress can't reach are left out.
+# No --enable-small: it makes FFmpeg slower.
+
+# GPL v2 or later: the libraries that needed version 3 are gone.
+--disable-version3
+--disable-ffplay
+--disable-doc
+
+# Capture devices ClipPress doesn't use. lavfi stays: its start-up check and GPU checks need it.
+--disable-indevs --enable-indev=lavfi --disable-outdevs
+
+# Other encoders for codecs that keep a better one here (x264, x265, SVT-AV1, libvpx, FFmpeg's own).
+--disable-libaom --disable-librav1e --disable-libkvazaar --disable-libopenh264 --disable-libxvid
+--disable-libtwolame --disable-libopenjpeg
+
+# Decoded by FFmpeg itself. Only an AMR encoder goes, which ClipPress never runs.
+--disable-libopencore-amrnb --disable-libopencore-amrwb
+
+# Formats no recorder makes, agreed by the owner: AVS2/AVS3, JPEG XL, SVG, LCEVC, teletext and ARIB captions,
+# tracker and game-music files, DVD menus and bluray:, sftp/srt/rist/rtmpe URLs.
+--disable-libxavs2 --disable-libdavs2 --disable-libuavs3d --disable-libjxl --disable-librsvg --disable-liblcevc-dec
+--disable-libzvbi --disable-libaribb24 --disable-libaribcaption --disable-libgme --disable-libopenmpt
+--disable-libbluray --disable-libdvdread --disable-libdvdnav --disable-libssh --disable-libsrt --disable-librist
+--disable-gmp
+
+# Filters and GPU layers ClipPress never asks for. Its text, speed, crop and scale use FFmpeg's own.
+--disable-libplacebo --disable-vulkan --disable-opencl --disable-cuda-llvm --disable-vaapi
+--disable-libvmaf --disable-libzimg --disable-librubberband --disable-libvidstab --disable-frei0r --disable-lv2
+--disable-libass --disable-libfreetype --disable-libharfbuzz --disable-libfribidi --disable-fontconfig
+--disable-lcms2 --disable-libsoxr --disable-openal --disable-sdl2 --disable-libzmq --disable-chromaprint

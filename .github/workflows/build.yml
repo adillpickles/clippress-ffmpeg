@@ -1,0 +1,66 @@
+name: Build FFmpeg
+
+on:
+  workflow_dispatch:
+    inputs:
+      extra_configure:
+        description: Extra configure flags, for a size experiment. Never with a release.
+        required: false
+        default: ''
+      release_tag:
+        description: Publish a release with this tag. Empty makes a test build only.
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build
+        env:
+          EXTRA_CONFIGURE: ${{ inputs.extra_configure }}
+        run: ./build.sh "$EXTRA_CONFIGURE"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ffmpeg
+          path: dist/*.zip
+          compression-level: 0
+
+  source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+      - run: sudo apt-get update -q && sudo apt-get install -q -y subversion
+      - name: Collect the source of everything linked in
+        run: ./collect-sources.sh
+      - uses: actions/upload-artifact@v6
+        with:
+          name: source
+          path: dist-source/*.tar.xz
+          compression-level: 0
+
+  release:
+    if: inputs.release_tag != '' && inputs.extra_configure == ''
+    needs: [build, source]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v7
+        with:
+          path: assets
+          merge-multiple: true
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+        run: |
+          gh release create "$TAG" assets/* --target "$GITHUB_SHA" --title "$TAG" \
+            --notes "FFmpeg for ClipPress, with the source of everything linked in. See the README."
