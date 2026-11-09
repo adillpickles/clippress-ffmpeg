@@ -21,6 +21,8 @@ git-mini-clone() {
     git -C "$3" -c advice.detachedHead=false checkout -q FETCH_HEAD
 }
 export -f retry-tool git-mini-clone
+# No background repacking: the clones are deleted as soon as they're read.
+export GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=gc.auto GIT_CONFIG_VALUE_0=0 GIT_CONFIG_KEY_1=maintenance.auto GIT_CONFIG_VALUE_1=false
 
 WORK="$ROOT/source-work"
 # Some libraries' download steps also run autotools, which only matters for building. Only the source is needed here.
