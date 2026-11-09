@@ -23,9 +23,16 @@ git-mini-clone() {
 export -f retry-tool git-mini-clone
 
 WORK="$ROOT/source-work"
+# Some libraries' download steps also run autotools, which only matters for building. Only the source is needed here.
+STUBS="$WORK/stubs"
+export PATH="$STUBS:$PATH"
 OUT="$WORK/ffmpeg-clippress-source"
 rm -rf "$WORK" dist-source
-mkdir -p "$OUT/libraries" dist-source
+mkdir -p "$OUT/libraries" dist-source "$STUBS"
+printf '#!/bin/sh
+exit 0
+' > "$STUBS/autoreconf"
+chmod +x "$STUBS/autoreconf"
 
 git clone -q --filter=blob:none https://github.com/BtbN/FFmpeg-Builds.git "$WORK/btbn"
 git -C "$WORK/btbn" -c advice.detachedHead=false checkout -q "$BTBN_COMMIT"
